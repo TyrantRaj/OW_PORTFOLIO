@@ -1,5 +1,5 @@
-const handler = require("../../dist/server/server.js");
-
 exports.handler = async (event, context) => {
-  return handler.default(event, context);
+  const mod = await import("../../dist/server/server.js");
+
+  return mod.default(event, context);
 };
