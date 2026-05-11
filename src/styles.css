@@ -142,9 +142,9 @@
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
   @media (hover: hover) and (pointer: fine) {
-    body, a, button, [role="button"], input, textarea, select {
-      cursor: none;
-    }
+    body, a, button, [role="button"] {
+  cursor: none;
+}
   }
 }
 

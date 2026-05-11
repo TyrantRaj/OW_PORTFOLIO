@@ -36,6 +36,21 @@ const IMAGES: { file: string; title: string }[] = [
 export function Creative() {
   const setRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+
+    window.addEventListener("resize", checkMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
 
   const openModal = (idx: number) => setActive(idx % IMAGES.length);
 
@@ -96,10 +111,18 @@ export function Creative() {
           </div>
         ) : (
           <motion.div
-            className="flex w-max items-center py-6"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 30, ease: "linear", repeat: Infinity }}
-          >
+  className="flex w-max items-center py-6"
+  animate={isMobile ? false : { x: ["0%", "-50%"] }}
+  transition={{
+    duration: 30,
+    ease: "linear",
+    repeat: Infinity,
+    repeatType: "loop",
+  }}
+  style={{
+    willChange: "transform",
+  }}
+>
             {/* Set A (measured) */}
             <div ref={setRef} className="flex items-center gap-5 pr-5 md:gap-6 md:pr-6">
               {IMAGES.map((it, i) => (

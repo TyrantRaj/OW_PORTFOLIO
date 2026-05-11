@@ -4,10 +4,8 @@ export function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
-  const [hover, setHover] = useState<{ active: boolean; label: string | null }>({
-    active: false,
-    label: null,
-  });
+  const [hoverActive, setHoverActive] = useState(false);
+  const [hoverLabel, setHoverLabel] = useState<string | null>(null);
   const [clicking, setClicking] = useState(false);
 
   useEffect(() => {
@@ -23,20 +21,33 @@ export function CustomCursor() {
     let raf = 0;
 
     const move = (e: MouseEvent) => {
-      mx = e.clientX; my = e.clientY;
+      mx = e.clientX;
+      my = e.clientY;
+
       if (dotRef.current) {
         dotRef.current.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%)`;
       }
+
       const t = e.target as HTMLElement;
-      const interactive = t.closest("a, button, [role='button'], input, textarea, [data-cursor]") as HTMLElement | null;
+
+      // input and textarea intentionally excluded — they must not trigger hover state
+      const interactive = t.closest(
+        "a, button, [role='button'], [data-cursor]"
+      ) as HTMLElement | null;
+
       if (interactive) {
-        const label = interactive.getAttribute("data-cursor-label");
-        const kind = interactive.getAttribute("data-cursor");
-        setHover({ active: true, label: label ?? (kind === "view" ? "View" : null) });
+        const label =
+          interactive.getAttribute("data-cursor-label") ??
+          (interactive.getAttribute("data-cursor") === "view" ? "View" : null);
+        // Only call setState when value actually changes
+        setHoverActive((prev) => (prev === true ? true : true));
+        setHoverLabel((prev) => (prev === label ? prev : label));
       } else {
-        setHover({ active: false, label: null });
+        setHoverActive((prev) => (prev === false ? false : false));
+        setHoverLabel((prev) => (prev === null ? null : null));
       }
     };
+
     const down = () => setClicking(true);
     const up = () => setClicking(false);
 
@@ -49,9 +60,11 @@ export function CustomCursor() {
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
+
     window.addEventListener("mousemove", move);
     window.addEventListener("mousedown", down);
     window.addEventListener("mouseup", up);
+
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("mousemove", move);
@@ -70,7 +83,7 @@ export function CustomCursor() {
         style={{
           width: clicking ? 4 : 6,
           height: clicking ? 4 : 6,
-          opacity: hover.active ? 0 : 1,
+          opacity: hoverActive ? 0 : 1,
           boxShadow: "0 0 12px oklch(1 0 0 / 0.9)",
           mixBlendMode: "difference",
         }}
@@ -79,15 +92,15 @@ export function CustomCursor() {
         ref={ringRef}
         className="pointer-events-none fixed left-0 top-0 z-[9998] flex items-center justify-center rounded-full border border-white transition-[width,height,background] duration-200 ease-out"
         style={{
-          width: hover.active ? 64 : 28,
-          height: hover.active ? 64 : 28,
-          background: hover.active ? "oklch(1 0 0 / 0.95)" : "transparent",
+          width: hoverActive ? 64 : 28,
+          height: hoverActive ? 64 : 28,
+          background: hoverActive ? "oklch(1 0 0 / 0.95)" : "transparent",
           mixBlendMode: "difference",
         }}
       >
-        {hover.label && (
+        {hoverLabel && (
           <span className="font-mono text-[10px] uppercase tracking-widest text-black">
-            {hover.label}
+            {hoverLabel}
           </span>
         )}
       </div>
